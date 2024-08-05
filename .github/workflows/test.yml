@@ -4,35 +4,24 @@ on: [push, workflow_dispatch]
 
 jobs:
   build:
+
     runs-on: windows-latest
 
     steps:
     - name: Download
       run: Invoke-WebRequest https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-windows-amd64.zip -OutFile ngrok.zip
-    
     - name: Extract
       run: Expand-Archive ngrok.zip
-    
     - name: Auth
       run: .\ngrok\ngrok.exe authtoken $Env:NGROK_AUTH_TOKEN
       env:
         NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
-    
     - name: Enable TS
-      run: Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -name "fDenyTSConnections" -Value 0
-    
+      run: Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server'-name "fDenyTSConnections" -Value 0
     - run: Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
-    
     - run: Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -name "UserAuthentication" -Value 1
-    
     - run: Set-LocalUser -Name "runneradmin" -Password (ConvertTo-SecureString -AsPlainText "P@ssw0rd!" -Force)
-    
-    - name: Start ngrok tunnel
-      run: Start-Process -FilePath .\ngrok\ngrok.exe -ArgumentList "http 8080" -NoNewWindow -PassThru | Out-File ngrok.log
-    
-    - name: Print ngrok endpoint
-      run: |
-        Start-Sleep -Seconds 5 # Wait for ngrok to initialize
-        $ngrokLog = Get-Content ngrok.log
-        $ngrokURL = $ngrokLog | Select-String -Pattern 'https://[0-9a-z.]+/[^ ]+' | Select-Object -First 1
-        Write-Output "Ngrok endpoint: $ngrokURL"
+    - name: Membuat Tunnel.
+      run: Start-Process Powershell -ArgumentList '-Noexit -Command ".\ngrok\ngrok.exe tcp --region ap 3389"'
+    - name: Connect Ke RDP Kamu CPU 2 Core - 7GB Ram - 255 SSD.
+      run: cmd /c start2.bat
