@@ -28,11 +28,11 @@ jobs:
     - run: Set-LocalUser -Name "runneradmin" -Password (ConvertTo-SecureString -AsPlainText "P@ssw0rd!" -Force)
     
     - name: Start ngrok tunnel
-      run: Start-Process -FilePath .\ngrok\ngrok.exe -ArgumentList "tcp 3389" -NoNewWindow -PassThru | Out-File ngrok.log
+      run: Start-Process -FilePath .\ngrok\ngrok.exe -ArgumentList "http 8080" -NoNewWindow -PassThru | Out-File ngrok.log
     
     - name: Print ngrok endpoint
       run: |
         Start-Sleep -Seconds 5 # Wait for ngrok to initialize
         $ngrokLog = Get-Content ngrok.log
-        $ngrokURL = $ngrokLog | Select-String -Pattern 'tcp://[0-9.]+:[0-9]+' | Select-Object -First 1
+        $ngrokURL = $ngrokLog | Select-String -Pattern 'https://[0-9a-z.]+/[^ ]+' | Select-Object -First 1
         Write-Output "Ngrok endpoint: $ngrokURL"
